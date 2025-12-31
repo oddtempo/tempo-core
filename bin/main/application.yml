@@ -1,0 +1,55 @@
+# Server Configuration
+server:
+  port: ${SERVER_PORT:8080}
+  # Trust X-Forwarded-* headers from reverse proxy
+  # IMPORTANT: Only enable when behind a trusted proxy (nginx, load balancer)
+  forward-headers-strategy: framework
+
+app:
+  security:
+    bootstrap:
+      enabled: ${BOOTSTRAP_ENABLED:true}
+      super-admin:
+        username: ${SUPER_ADMIN_USERNAME:super_admin}
+        password: ${SUPER_ADMIN_PASSWORD:12345678}
+        email: ${SUPER_ADMIN_EMAIL:admin@tempo.core}
+  
+spring:
+  application:
+    name: tempo-core
+
+  # Enable Virtual Threads (Java 21+)
+  threads:
+    virtual:
+      enabled: true
+  
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:ep-quiet-frog-a1on692i-pooler.ap-southeast-1.aws.neon.tech}:${DB_PORT:5432}/${DB_NAME:tempo}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_t5xngHquX3OQ}
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
+  jpa:
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+  
+  flyway:
+    validate-on-migrate: false
+
+  # Redis Configuration
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+    
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
