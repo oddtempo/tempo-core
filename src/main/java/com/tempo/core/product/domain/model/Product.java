@@ -1,109 +1,70 @@
 package com.tempo.core.product.domain.model;
 
 import com.tempo.core.product.domain.event.ProductCreatedEvent;
-import com.tempo.core.shared.domain.entity.AggregateRoot;
+import com.tempo.core.product.domain.rule.MaxThreeOptionsRule;
+import com.tempo.core.shared.domain.entity.TenantAggregateRoot;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
-/**
- * Product Aggregate Root.
- * <p>
- * This is an example of how to implement an Aggregate Root using the base
- * classes.
- * </p>
- * 
- * <h2>Key Design Patterns:</h2>
- * <ul>
- * <li>Factory method ({@code create()}) instead of public constructor</li>
- * <li>Domain events registered within business methods</li>
- * <li>Invariants enforced in constructor and business methods</li>
- * </ul>
- */
 @Entity
 @Table(name = "products")
 @Getter
 @Setter(AccessLevel.PRIVATE)
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // Required by JPA
-public class Product extends AggregateRoot<Long> {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
+public class Product extends TenantAggregateRoot<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
-    private String name;
+    private String title;
 
-    @Column(nullable = false, precision = 19, scale = 4)
-    private BigDecimal price;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    @Column(nullable = false)
-    private boolean active = true;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("position ASC")
+    private List<ProductOption> options = new ArrayList<>();
 
-    // ============ FACTORY METHOD (Domain Entry Point) ============
+    // ============ FACTORY METHOD ============
 
-    /**
-     * Creates a new Product and registers the ProductCreatedEvent.
-     * <p>
-     * Use this factory method instead of constructor to ensure
-     * all invariants are validated and events are properly registered.
-     * </p>
-     * 
-     * @param name  product name (required)
-     * @param price product price (must be positive)
-     * @return newly created Product
-     * @throws IllegalArgumentException if validation fails
-     */
-    public static Product create(String name, BigDecimal price) {
-        // Validate invariants
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Product name is required");
-        }
-        if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Product price must be positive");
-        }
-
+    public static Product create(UUID tenantId, String title, String description) {
         Product product = new Product();
-        product.setName(name.trim());
-        product.setPrice(price);
+        product.setTenantId(tenantId);
+        product.title = title;
+        product.description = description;
 
-        // Register domain event (will be published on save())
-        product.registerEvent(new ProductCreatedEvent(
-                String.valueOf(product.getId()), // ID may be null before persist
-                name,
-                price));
+        product.registerEvent(new ProductCreatedEvent(null, title));
 
         return product;
     }
 
     // ============ BUSINESS METHODS ============
 
-    /**
-     * Updates the product price.
-     * Can be extended to register a ProductPriceChangedEvent if needed.
-     */
-    public void updatePrice(BigDecimal newPrice) {
-        if (newPrice == null || newPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Product price must be positive");
-        }
-        this.price = newPrice;
-        // Optionally: registerEvent(new ProductPriceChangedEvent(...))
+    public void addOption(String name) {
+        checkRule(new MaxThreeOptionsRule(this.options.size()));
+
+        ProductOption option = ProductOption.create(this, name, this.options.size());
+        this.options.add(option);
     }
 
-    /**
-     * Deactivates the product (soft delete).
-     */
-    public void deactivate() {
-        this.active = false;
-        // Optionally: registerEvent(new ProductDeactivatedEvent(...))
+    public void updateDetails(String title, String description) {
+        this.title = title;
+        this.description = description;
     }
 
     @Override
-    public Long getId() {
+    public UUID getId() {
         return this.id;
     }
 }
