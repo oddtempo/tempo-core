@@ -163,11 +163,13 @@ public class AuthWriteService {
 
         validatePasswordStrength(request.getPassword());
         String passwordHash = passwordEncoder.encode(request.getPassword());
+
         User user = User.create(
                 tenantId,
                 request.getUsername(),
                 passwordHash,
                 request.getFullName());
+
         user.setEmail(Email.ofNullable(request.getEmail()));
 
         if (request.getRoleNames() != null && !request.getRoleNames().isEmpty()) {

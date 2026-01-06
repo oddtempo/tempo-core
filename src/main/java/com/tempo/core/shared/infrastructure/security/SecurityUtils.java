@@ -1,6 +1,6 @@
 package com.tempo.core.shared.infrastructure.security;
 
-import com.tempo.core.shared.domain.entity.AbstractTenantEntity;
+import com.tempo.core.shared.domain.TenantConstants;
 import com.tempo.core.shared.infrastructure.tenant.TenantContext;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +34,6 @@ public final class SecurityUtils {
      * Check if the current user is a Super Admin (belongs to System Tenant).
      */
     public boolean isSuperAdmin() {
-        return AbstractTenantEntity.SYSTEM_TENANT_ID.equals(getCurrentTenantIdSafe());
+        return TenantConstants.SYSTEM_TENANT_ID.equals(getCurrentTenantIdSafe());
     }
 }

@@ -12,10 +12,10 @@ Thiết lập domain entities và database schema cho Product module.
 
 ## Scope
 
-- [x] Create `Product` entity (extends `TenantAggregateRoot<UUID>`)
+- [x] Create `Product` entity (extends `AggregateRoot<UUID>` with `@Filter`)
 - [x] Create `ProductOption` entity (extends `BaseEntity<UUID>`)
 - [x] Create `OptionValue` entity (extends `BaseEntity<UUID>`)
-- [x] Create `ProductVariant` entity (extends `TenantAggregateRoot<UUID>`)
+- [x] Create `ProductVariant` entity (extends `BaseEntity<UUID>` with `@Filter`)
 - [x] Implement business rules:
   - `SkuMustBeUniqueRule`
   - `MaxThreeOptionsRule`
@@ -36,7 +36,8 @@ Thiết lập domain entities và database schema cho Product module.
 ```java
 // Product.java
 @Entity @Table(name = "products")
-public class Product extends TenantAggregateRoot<UUID> {
+@Filter(name = "tenantFilter")
+public class Product extends AggregateRoot<UUID> {
     private String title;
     private String description;
     @OneToMany(mappedBy = "product", cascade = ALL, orphanRemoval = true)

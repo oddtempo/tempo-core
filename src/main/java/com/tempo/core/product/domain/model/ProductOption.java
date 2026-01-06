@@ -38,8 +38,6 @@ public class ProductOption extends BaseEntity<UUID> {
     @OrderBy("position ASC")
     private List<OptionValue> values = new ArrayList<>();
 
-    // ============ FACTORY METHOD ============
-
     static ProductOption create(Product product, String name, int position) {
         ProductOption option = new ProductOption();
         option.product = product;
@@ -48,10 +46,8 @@ public class ProductOption extends BaseEntity<UUID> {
         return option;
     }
 
-    // ============ BUSINESS METHODS ============
-
     public void addValue(String value) {
-        OptionValue optionValue = OptionValue.create(this, value, this.values.size());
+        var optionValue = OptionValue.create(this, value, this.values.size());
         this.values.add(optionValue);
     }
 

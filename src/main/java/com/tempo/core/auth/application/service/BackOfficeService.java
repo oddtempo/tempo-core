@@ -34,22 +34,22 @@ public class BackOfficeService {
             throw new BusinessException("DUPLICATE_TENANT_CODE", "Tenant code already exists: " + request.getCode());
         }
 
-        if (userRepository.existsByUsername(request.getAdminUsername())) {
-            throw new BusinessException("DUPLICATE_USERNAME", "Username already exists: " + request.getAdminUsername());
+        if (userRepository.existsByUsername(request.getUsername())) {
+            throw new BusinessException("DUPLICATE_USERNAME", "Username already exists: " + request.getUsername());
         }
 
         Tenant tenant = Tenant.create(request.getCode(), request.getName());
         tenant = tenantRepository.save(tenant);
         UUID tenantId = tenant.getId();
 
-        String passwordHash = passwordEncoder.encode(request.getAdminPassword());
+        String passwordHash = passwordEncoder.encode(request.getPassword());
         User adminUser = User.create(
                 tenantId,
-                request.getAdminUsername(),
+                request.getUsername(),
                 passwordHash,
-                request.getAdminFullName());
+                request.getFullName());
 
-        adminUser.setEmail(Email.ofNullable(request.getAdminEmail()));
+        adminUser.setEmail(Email.ofNullable(request.getEmail()));
         adminUser = userRepository.save(adminUser);
 
         tenantSetupService.setupTenant(tenantId, adminUser.getId());

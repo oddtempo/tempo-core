@@ -4,7 +4,8 @@ import com.tempo.core.auth.domain.rule.PasswordMustNotBeEmptyRule;
 import com.tempo.core.auth.domain.rule.TenantIdMustNotBeEmptyRule;
 import com.tempo.core.auth.domain.rule.UsernameFormatRule;
 import com.tempo.core.auth.domain.rule.UsernameMustNotBeEmptyRule;
-import com.tempo.core.shared.domain.entity.TenantAggregateRoot;
+import com.tempo.core.shared.domain.entity.AggregateRoot;
+import com.tempo.core.shared.domain.entity.Audit;
 import com.tempo.core.shared.domain.vo.Email;
 import com.tempo.core.shared.infrastructure.persistence.EmailConverter;
 import jakarta.persistence.*;
@@ -12,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Filter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.HashSet;
@@ -23,20 +25,23 @@ import java.util.stream.Collectors;
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "tenant_id", "username" })
 })
+@Filter(name = "tenantFilter")
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class User extends TenantAggregateRoot<UUID> {
+public class User extends AggregateRoot<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(nullable = false, updatable = false)
+    private UUID tenantId;
 
     @Column(nullable = false, length = 100)
     private String username;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(nullable = false)
     private String passwordHash;
 
     @Setter
@@ -44,7 +49,6 @@ public class User extends TenantAggregateRoot<UUID> {
     private Email email;
 
     @Setter
-    @Column(name = "full_name", length = 255)
     private String fullName;
 
     @Column(name = "is_active", nullable = false)
@@ -54,6 +58,9 @@ public class User extends TenantAggregateRoot<UUID> {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @Embedded
+    private Audit audit = new Audit();
+
     public static User create(UUID tenantId, String username, String passwordHash, String fullName) {
         User user = new User();
         user.checkRule(new TenantIdMustNotBeEmptyRule(tenantId));
@@ -61,7 +68,8 @@ public class User extends TenantAggregateRoot<UUID> {
         user.checkRule(new UsernameFormatRule(username));
         user.checkRule(new PasswordMustNotBeEmptyRule(passwordHash));
 
-        user.setTenantId(tenantId);
+        user.id = UUID.randomUUID();
+        user.tenantId = tenantId;
         user.username = username.trim().toLowerCase();
         user.passwordHash = passwordHash;
         user.fullName = fullName;
@@ -101,5 +109,10 @@ public class User extends TenantAggregateRoot<UUID> {
         return roles.stream()
                 .flatMap(role -> role.getPermissionCodes().stream())
                 .collect(Collectors.toSet());
+    }
+
+    @Override
+    public UUID getId() {
+        return this.id;
     }
 }

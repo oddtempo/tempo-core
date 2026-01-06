@@ -3,13 +3,10 @@ package com.tempo.core.auth.application.model.request;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
+@Getter
+@Setter
 public class ProvisionTenantRequest {
 
     @NotBlank
@@ -22,16 +19,16 @@ public class ProvisionTenantRequest {
 
     @NotBlank
     @Size(min = 3, max = 50)
-    private String adminUsername;
+    private String username;
 
     @NotBlank
     @Size(min = 8, max = 100)
-    private String adminPassword;
+    private String password;
 
     @NotBlank
     @Size(min = 2, max = 100)
-    private String adminFullName;
+    private String fullName;
 
     @Email
-    private String adminEmail;
+    private String email;
 }

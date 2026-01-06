@@ -2,7 +2,8 @@ package com.tempo.core.auth.domain.model;
 
 import com.tempo.core.auth.domain.rule.RoleNameMustNotBeEmptyRule;
 import com.tempo.core.auth.domain.rule.TenantIdMustNotBeEmptyRule;
-import com.tempo.core.shared.domain.entity.TenantSimpleEntity;
+import com.tempo.core.shared.domain.entity.BaseEntity;
+import org.hibernate.annotations.Filter;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -17,21 +18,23 @@ import java.util.UUID;
 @Table(name = "roles", uniqueConstraints = {
         @UniqueConstraint(columnNames = { "tenant_id", "name" })
 })
+@Filter(name = "tenantFilter")
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Role extends TenantSimpleEntity<UUID> {
+public class Role extends BaseEntity<UUID> {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
+    @Column(nullable = false, updatable = false)
+    private UUID tenantId;
 
     @Setter
     @Column(nullable = false, length = 100)
     private String name;
 
     @Setter
-    @Column(length = 255)
     private String description;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -43,7 +46,8 @@ public class Role extends TenantSimpleEntity<UUID> {
         role.checkRule(new TenantIdMustNotBeEmptyRule(tenantId));
         role.checkRule(new RoleNameMustNotBeEmptyRule(name));
 
-        role.setTenantId(tenantId);
+        role.id = UUID.randomUUID();
+        role.tenantId = tenantId;
         role.setName(name.trim().toUpperCase());
         role.setDescription(description);
         return role;
@@ -70,5 +74,10 @@ public class Role extends TenantSimpleEntity<UUID> {
             codes.add(p.getCode());
         }
         return codes;
+    }
+
+    @Override
+    public UUID getId() {
+        return this.id;
     }
 }

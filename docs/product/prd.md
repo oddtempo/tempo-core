@@ -1,5 +1,9 @@
 # Product & Variant Management (Shopify-style) - PRD
 
+> **Status**: ✅ APPROVED  
+> **Last Updated**: 2026-01-06  
+> **Next Step**: 🔄 Pending Architecture Update → [Change Request #001](./change-request-001.md)
+
 ## 1. Tổng quan sản phẩm (Product Overview)
 * **Tên dự án:** Tempo-Core
 * **Module:** `product`
@@ -12,12 +16,17 @@
 
 ### 3.1. Quản lý Sản phẩm Gốc (Product Core)
 * **Thông tin cơ bản:** Tên sản phẩm (Title), Mô tả (Description)
-* **Quản lý Options:** * Hỗ trợ tối đa **3 Options** cho mỗi sản phẩm (ví dụ: Màu sắc, Kích thước, Chất liệu).
+* **Quản lý Options (Bắt buộc):**
+    * Mỗi sản phẩm **bắt buộc** phải có ít nhất **1 Option** khi tạo.
+    * Hỗ trợ tối đa **3 Options** cho mỗi sản phẩm (ví dụ: Màu sắc, Kích thước, Chất liệu).
     * Mỗi Option có một danh sách các giá trị (ví dụ: Màu sắc: [Đỏ, Xanh, Vàng]).
 
 ### 3.2. Quản lý Biến thể (Product Variant)
+* **Bắt buộc có Variant:** Mỗi sản phẩm **bắt buộc** phải có ít nhất **1 Variant** khi tạo.
+* **Tạo đồng thời (Atomic Creation):** Options và Variants được tạo **cùng lúc** với Product trong một request duy nhất. Không cho phép tạo Product trước rồi thêm Variant sau.
 * **Tổ hợp biến thể:** Hệ thống hỗ trợ sinh ra các biến thể dựa trên tổ hợp của các Options.
-* **Thuộc tính biến thể:** * **SKU (Bắt buộc):** Mã định danh duy nhất toàn hệ thống.
+* **Thuộc tính biến thể:**
+    * **SKU (Bắt buộc):** Mã định danh duy nhất toàn hệ thống.
     * **Giá (Price):** Giá bán lẻ của biến thể đó.
     * **Giá so sánh (Compare at Price):** Dùng để hiển thị giá gốc khi có giảm giá.
     * **Tham chiếu Option:** Lưu trữ giá trị cụ thể (ví dụ: Option1 = "Đỏ", Option2 = "L").
@@ -29,10 +38,13 @@
 * **Mục đích:** Để module `inventory` lắng nghe và tự động tạo bản ghi tồn kho tương ứng.
 
 ## 4. Quy tắc nghiệp vụ (Business Rules)
-1.  **Duy nhất (Uniqueness):** `SKU` của Variant là duy nhất trên toàn bộ hệ thống (Global Unique).
-2.  **Ràng buộc Option:** Một biến thể không thể tồn tại nếu không thuộc về một Sản phẩm gốc.
-3.  **Toàn vẹn dữ liệu:** Khi xóa một Sản phẩm, tất cả các Biến thể và Options liên quan phải bị xóa theo (Cascade Delete).
-4.  **Tính đóng gói (Encapsulation):** Module `product` không được phép truy cập trực tiếp vào Database của module `inventory`. Mọi trao đổi thông tin phải thông qua Events hoặc Public Interfaces.
+1.  **Bắt buộc có Options:** Một Product **không thể tồn tại** mà không có ít nhất 1 Option.
+2.  **Bắt buộc có Variants:** Một Product **không thể tồn tại** mà không có ít nhất 1 Variant.
+3.  **Tạo Atomic:** Options và Variants phải được tạo **đồng thời** với Product trong cùng một transaction. Không hỗ trợ tạo Product "rỗng" rồi thêm Variant sau.
+4.  **Duy nhất (Uniqueness):** `SKU` của Variant là duy nhất trên toàn bộ hệ thống (Global Unique).
+5.  **Ràng buộc Option:** Một biến thể không thể tồn tại nếu không thuộc về một Sản phẩm gốc.
+6.  **Toàn vẹn dữ liệu:** Khi xóa một Sản phẩm, tất cả các Biến thể và Options liên quan phải bị xóa theo (Cascade Delete).
+7.  **Tính đóng gói (Encapsulation):** Module `product` không được phép truy cập trực tiếp vào Database của module `inventory`. Mọi trao đổi thông tin phải thông qua Events hoặc Public Interfaces.
 
 ## 5. Tiêu chí nghiệm thu (Acceptance Criteria)
 * [ ] Có thể tạo một sản phẩm "Áo thun" với 2 Options: Color (Red, Blue) và Size (S, M).

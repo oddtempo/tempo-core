@@ -26,7 +26,6 @@ public interface AuthMapper {
     @Mapping(target = "username", source = "user.username")
     @Mapping(target = "fullName", source = "user.fullName")
     @Mapping(target = "permissions", source = "permissions")
-    @Mapping(target = "expiresInMinutes", source = "expiresInMinutes")
     LoginResponse toLoginResponse(User user, String token, Set<String> permissions, int expiresInMinutes);
 
     PermissionResponse toPermissionResponse(Permission permission);
@@ -40,6 +39,7 @@ public interface AuthMapper {
 
     @Mapping(target = "roleNames", source = "roles", qualifiedByName = "rolesToNameSet")
     @Mapping(target = "email", source = "email", qualifiedByName = "emailToString")
+    @Mapping(target = "createdAt", source = "audit.createdAt")
     UserResponse toUserResponse(User user);
 
     List<UserResponse> toUserResponseList(List<User> users);

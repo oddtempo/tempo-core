@@ -2,7 +2,7 @@ package com.tempo.core.auth.job;
 
 import com.tempo.core.auth.domain.model.User;
 import com.tempo.core.auth.domain.repository.UserRepository;
-import com.tempo.core.shared.domain.entity.AbstractTenantEntity;
+import com.tempo.core.shared.domain.TenantConstants;
 import com.tempo.core.shared.domain.vo.Email;
 import com.tempo.core.shared.infrastructure.tenant.NoTenantFilter;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +52,7 @@ public class SystemBootstrapService implements CommandLineRunner {
             }
 
             User superAdmin = User.create(
-                    AbstractTenantEntity.SYSTEM_TENANT_ID,
+                    TenantConstants.SYSTEM_TENANT_ID,
                     adminUsername,
                     passwordEncoder.encode(passwordToUse),
                     "System Super Admin");

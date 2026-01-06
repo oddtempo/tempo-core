@@ -9,6 +9,5 @@ public record LoginResponse(
         UUID tenantId,
         String username,
         String fullName,
-        Set<String> permissions,
-        int expiresInMinutes) {
+        Set<String> permissions) {
 }

@@ -32,8 +32,6 @@ public class OptionValue extends BaseEntity<UUID> {
     @Column(nullable = false)
     private int position;
 
-    // ============ FACTORY METHOD ============
-
     static OptionValue create(ProductOption option, String value, int position) {
         OptionValue optionValue = new OptionValue();
         optionValue.option = option;

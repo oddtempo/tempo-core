@@ -1,6 +1,6 @@
 # Product Module - Architecture
 
-> **Last Updated**: 2026-01-05
+> **Last Updated**: 2026-01-06
 
 ## Tổng quan
 
@@ -86,9 +86,9 @@ erDiagram
         String sku UK
         BigDecimal price
         BigDecimal compare_at_price
-        String option1_value
-        String option2_value
-        String option3_value
+        String option1
+        String option2
+        String option3
         String image_url
     }
 ```
@@ -97,10 +97,10 @@ erDiagram
 
 | Entity | Base Class | Mô tả |
 | ------ | ---------- | ----- |
-| `Product` | `TenantAggregateRoot<UUID>` | Aggregate Root - sản phẩm gốc |
+| `Product` | `TenantAggregateRoot<UUID>` | Aggregate Root - sản phẩm gốc, emits all events |
 | `ProductOption` | `BaseEntity<UUID>` | Thuộc tính (Color, Size...) |
 | `OptionValue` | `BaseEntity<UUID>` | Giá trị thuộc tính (Red, Blue...) |
-| `ProductVariant` | `TenantAggregateRoot<UUID>` | Biến thể với SKU unique |
+| `ProductVariant` | `TenantSimpleEntity<UUID>` | Child entity - biến thể với SKU unique |
 
 ---
 
@@ -178,6 +178,8 @@ public void onVariantCreated(ProductVariantCreatedEvent event) {
 
 | Rule Class | Mô tả |
 | ---------- | ----- |
+| `ProductMustHaveOptionsRule` | Product phải có ít nhất 1 Option |
+| `ProductMustHaveVariantsRule` | Product phải có ít nhất 1 Variant |
 | `SkuMustBeUniqueRule` | SKU phải unique toàn hệ thống |
 | `MaxThreeOptionsRule` | Tối đa 3 Options/Product |
 | `VariantMustBelongToProductRule` | Variant phải thuộc Product |
@@ -191,11 +193,13 @@ public void onVariantCreated(ProductVariantCreatedEvent event) {
 | ------ | -------- | ----- |
 | `GET` | `/api/products` | Danh sách sản phẩm |
 | `GET` | `/api/products/{id}` | Chi tiết sản phẩm (kèm variants) |
-| `POST` | `/api/products` | Tạo sản phẩm mới |
+| `POST` | `/api/products` | Tạo sản phẩm mới **(Atomic: Options + Variants required)** |
 | `PUT` | `/api/products/{id}` | Cập nhật sản phẩm |
 | `DELETE` | `/api/products/{id}` | Xóa sản phẩm (cascade variants) |
-| `POST` | `/api/products/{id}/variants` | Thêm variant |
 | `PUT` | `/api/products/{id}/variants/{variantId}` | Cập nhật variant |
+
+> [!IMPORTANT]
+> **Atomic Creation**: Không hỗ trợ tạo Variant riêng lẻ. Product, Options, và Variants phải được tạo cùng lúc trong một request.
 
 ---
 
@@ -241,10 +245,9 @@ CREATE TABLE product_variants (
     sku VARCHAR(100) NOT NULL UNIQUE,
     price DECIMAL(19,2) NOT NULL,
     compare_at_price DECIMAL(19,2),
-    option1_value VARCHAR(255),
-    option2_value VARCHAR(255),
-    option3_value VARCHAR(255),
-    image_url VARCHAR(500),
+    option1 VARCHAR(255),
+    option2 VARCHAR(255),
+    option3 VARCHAR(255),
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     version BIGINT DEFAULT 0

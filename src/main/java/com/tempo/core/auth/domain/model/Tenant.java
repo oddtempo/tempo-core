@@ -4,11 +4,13 @@ import com.tempo.core.auth.domain.rule.TenantCodeFormatRule;
 import com.tempo.core.auth.domain.rule.TenantCodeMustNotBeEmptyRule;
 import com.tempo.core.auth.domain.rule.TenantNameMustNotBeEmptyRule;
 import com.tempo.core.shared.domain.entity.AggregateRoot;
+import com.tempo.core.shared.domain.entity.Audit;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.UUID;
 
@@ -17,6 +19,7 @@ import java.util.UUID;
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Tenant extends AggregateRoot<UUID> {
 
     @Id
@@ -31,6 +34,9 @@ public class Tenant extends AggregateRoot<UUID> {
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Embedded
+    private Audit audit = new Audit();
 
     public static Tenant create(String code, String name) {
         Tenant tenant = new Tenant();

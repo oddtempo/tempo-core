@@ -21,14 +21,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.List;
 import java.util.TimeZone;
 
-/**
- * Global Web/API configuration for the application.
- * <p>
- * This configuration is placed at the application root level (not in shared
- * module)
- * because it defines application-wide behavior for HTTP/JSON handling.
- * </p>
- */
 @Configuration
 @RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {

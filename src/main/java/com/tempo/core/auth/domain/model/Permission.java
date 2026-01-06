@@ -1,30 +1,23 @@
 package com.tempo.core.auth.domain.model;
 
 import com.tempo.core.auth.domain.rule.PermissionCodeFormatRule;
-import com.tempo.core.shared.domain.entity.BaseDomainEntity;
+import com.tempo.core.shared.domain.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Permission entity.
- * <p>
- * Represents a single action permission in the system.
- * Format: {@code resource:action} (e.g., "product:create", "voucher:approve")
- * </p>
- */
 @Entity
 @Table(name = "permissions")
 @Getter
 @Setter(AccessLevel.PRIVATE)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Permission extends BaseDomainEntity<String> {
+public class Permission extends BaseEntity<String> {
 
     @Id
     @Column(length = 100)
-    private String code; // e.g., "product:create"
+    private String code;
 
     @Column(length = 255)
     private String description;
