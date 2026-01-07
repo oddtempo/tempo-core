@@ -1,2 +1,2 @@
-@org.springframework.modulith.ApplicationModule(displayName = "Authentication", allowedDependencies = { "shared" })
+@org.springframework.modulith.ApplicationModule(allowedDependencies = { "shared" })
 package com.tempo.core.auth;
