@@ -39,8 +39,13 @@ class BackOfficeServiceTest {
     @DisplayName("provisionTenant should save tenant, user and call setupTenant")
     void provisionTenantSuccess() {
         // Arrange
-        ProvisionTenantRequest request = new ProvisionTenantRequest(
-                "new-shop", "New Shop", "admin", "password123", "Admin User", "admin@test.com");
+        ProvisionTenantRequest request = new ProvisionTenantRequest();
+        request.setCode("new-shop");
+        request.setName("New Shop");
+        request.setUsername("admin");
+        request.setPassword("password123");
+        request.setFullName("Admin User");
+        request.setEmail("admin@test.com");
 
         UUID tenantId = UUID.randomUUID();
         UUID adminId = UUID.randomUUID();

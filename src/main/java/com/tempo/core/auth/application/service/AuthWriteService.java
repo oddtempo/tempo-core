@@ -59,7 +59,6 @@ public class AuthWriteService {
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
     private final AuthMapper authMapper;
-    private final ApplicationEventPublisher eventPublisher;
     private final TenantSetupService tenantSetupService;
 
     @NoTenantFilter

@@ -3,7 +3,6 @@ package com.tempo.core.shared.domain.entity;
 import com.tempo.core.shared.domain.exception.BusinessException;
 import com.tempo.core.shared.domain.rule.BusinessRule;
 import jakarta.persistence.MappedSuperclass;
-import jakarta.persistence.Version;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -14,10 +13,6 @@ import java.util.Objects;
 public abstract class BaseEntity<ID extends Serializable> {
 
     public abstract ID getId();
-
-    @Version
-    private Long version;
-
 
     protected void checkRule(BusinessRule rule) {
         if (rule.isBroken()) {

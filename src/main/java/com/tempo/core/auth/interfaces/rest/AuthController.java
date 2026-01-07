@@ -14,6 +14,9 @@ import com.tempo.core.auth.application.service.AuthReadService;
 import com.tempo.core.auth.application.service.AuthWriteService;
 import com.tempo.core.shared.infrastructure.tenant.TenantId;
 import org.springframework.security.access.prepost.PreAuthorize;
+
+import static com.tempo.core.shared.domain.security.Permissions.*;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -46,53 +49,51 @@ public class AuthController {
     }
 
     @GetMapping("/roles")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<RoleResponse>> getAllRoles() {
-        return ResponseEntity.ok(authReadService.getAllRoles());
+    @PreAuthorize(ROLE_MANAGE)
+    public List<RoleResponse> getAllRoles() {
+        return authReadService.getAllRoles();
     }
 
     @GetMapping("/users")
-    @PreAuthorize("hasAuthority('user:manage')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(authReadService.getAllUsers());
+    @PreAuthorize(USER_MANAGE)
+    public List<UserResponse> getAllUsers() {
+        return authReadService.getAllUsers();
     }
 
     @GetMapping("/users/{userId}/roles")
-    @PreAuthorize("hasAuthority('user:manage')")
-    public ResponseEntity<List<RoleResponse>> getUserRoles(@TenantId UUID tenantId, @PathVariable UUID userId) {
-        return ResponseEntity.ok(authReadService.getUserRoles(tenantId, userId));
+    @PreAuthorize(USER_MANAGE)
+    public List<RoleResponse> etUserRoles(@TenantId UUID tenantId, @PathVariable UUID userId) {
+        return authReadService.getUserRoles(tenantId, userId);
     }
 
     @PostMapping("/users")
-    @PreAuthorize("hasAuthority('user:manage')")
+    @PreAuthorize(USER_MANAGE)
     public ResponseEntity<Void> addUser(@TenantId UUID tenantId, @Valid @RequestBody AddUserRequest request) {
         authWriteService.addUserToTenant(tenantId, request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/users/{userId}/roles")
-    @PreAuthorize("hasAuthority('user:manage')")
-    public ResponseEntity<Void> updateUserRoles(
-            @TenantId UUID tenantId,
-            @PathVariable UUID userId,
-            @Valid @RequestBody UpdateUserRolesRequest request) {
+    @PreAuthorize(USER_MANAGE)
+    public ResponseEntity<Void> updateUserRoles(@TenantId UUID tenantId,
+                                                @PathVariable UUID userId,
+                                                @Valid @RequestBody UpdateUserRolesRequest request) {
         authWriteService.updateUserRoles(tenantId, userId, request);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/roles")
-    @PreAuthorize("hasAuthority('role:manage')")
+    @PreAuthorize(ROLE_MANAGE)
     public ResponseEntity<Void> createRole(@TenantId UUID tenantId, @Valid @RequestBody CreateRoleRequest request) {
         authWriteService.createRole(tenantId, request);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/roles/{roleId}")
-    @PreAuthorize("hasAuthority('role:manage')")
-    public ResponseEntity<Void> updateRole(
-            @TenantId UUID tenantId,
-            @PathVariable UUID roleId,
-            @Valid @RequestBody CreateRoleRequest request) {
+    @PreAuthorize(ROLE_MANAGE)
+    public ResponseEntity<Void> updateRole(@TenantId UUID tenantId,
+                                           @PathVariable UUID roleId,
+                                           @Valid @RequestBody CreateRoleRequest request) {
         authWriteService.updateRole(tenantId, roleId, request);
         return ResponseEntity.ok().build();
     }

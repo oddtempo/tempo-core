@@ -6,9 +6,10 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -35,8 +36,8 @@ public class ProductOption extends BaseEntity<UUID> {
     private int position;
 
     @OneToMany(mappedBy = "option", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OrderBy("position ASC")
-    private List<OptionValue> values = new ArrayList<>();
+    @BatchSize(size = 100)
+    private Set<OptionValue> values = new HashSet<>();
 
     static ProductOption create(Product product, String name, int position) {
         ProductOption option = new ProductOption();
