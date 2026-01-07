@@ -1,5 +1,6 @@
 package com.tempo.core.shared.infrastructure.tenant;
 
+import com.tempo.core.shared.domain.exception.AuthenticationException;
 import com.tempo.core.shared.infrastructure.security.SecurityUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -62,22 +63,27 @@ public class TenantFilterAspect {
         // 2. Get current tenant ID
         UUID tenantId = SecurityUtils.getCurrentTenantIdSafe();
 
-        // 3. Enable filter if tenant ID is available
-        if (tenantId != null) {
-            try {
-                Session session = entityManager.unwrap(Session.class);
-                session.enableFilter("tenantFilter")
-                        .setParameter("tenantId", tenantId);
-                log.debug("Enabled tenantFilter for tenant: {} on method: {}",
-                        tenantId, joinPoint.getSignature().getName());
-            } catch (Exception e) {
-                log.warn("Failed to enable tenant filter: {}", e.getMessage());
-            }
-        } else {
-            log.debug("No tenant context for method: {}", joinPoint.getSignature());
+        // 3. Fail-fast if tenant context is missing (security enforcement)
+        if (tenantId == null) {
+            log.error("Tenant context missing for method: {} - this is a security violation",
+                    joinPoint.getSignature());
+            throw new AuthenticationException("TENANT_CONTEXT_MISSING",
+                    "Tenant context is required for this operation. Please authenticate first.");
         }
 
-        // 4. Proceed with the actual method
+        // 4. Enable tenant filter
+        try {
+            Session session = entityManager.unwrap(Session.class);
+            session.enableFilter("tenantFilter")
+                    .setParameter("tenantId", tenantId);
+            log.debug("Enabled tenantFilter for tenant: {} on method: {}",
+                    tenantId, joinPoint.getSignature().getName());
+        } catch (Exception e) {
+            log.error("Failed to enable tenant filter for tenant {}: {}", tenantId, e.getMessage());
+            throw new IllegalStateException("Failed to enable tenant isolation", e);
+        }
+
+        // 5. Proceed with the actual method
         return joinPoint.proceed();
     }
 
@@ -85,16 +91,10 @@ public class TenantFilterAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
 
-        // Check on Method
         if (method.isAnnotationPresent(NoTenantFilter.class)) {
             return true;
         }
 
-        // Check on Class
-        if (joinPoint.getTarget().getClass().isAnnotationPresent(NoTenantFilter.class)) {
-            return true;
-        }
-
-        return false;
+        return joinPoint.getTarget().getClass().isAnnotationPresent(NoTenantFilter.class);
     }
 }
